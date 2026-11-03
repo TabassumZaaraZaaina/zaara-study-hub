@@ -6,7 +6,8 @@ import { SUBJECT_CYCLE, SUBJECT_STYLE, TEMPLATE_BY_ID } from '@/data/catalog';
 import { computeMastery, pct } from '@/domain/mastery';
 import { subjectSummary } from '@/domain/progress';
 import { useAttempts, useExams, useMastery, useRepairs, useSessions, useSubjectMap, useToday, useTopics } from '@/hooks/data';
-import { importTopics } from '@/services/topics';
+import { importTopics, loadSyllabus, syllabusStatus } from '@/services/topics';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { regenerateFuture } from '@/services/plan';
 import { uid } from '@/services/meta';
 import { SessionRow } from '@/components/session';
@@ -33,6 +34,7 @@ export function SubjectScreen() {
   if (!subject) return null;
 
   const topics = allTopics.filter((t) => t.subjectId === id && t.active);
+  const isParent = (tid: string) => topics.some((c) => c.parentTopicId === tid);
   const sum = subjectSummary(id, allTopics, sessions, attempts, mastery);
   const subjAttempts = attempts.filter((a) => a.subjectId === id).sort((a, b) => (a.completedAt < b.completedAt ? 1 : -1));
   const upcoming = sessions.filter((s) => s.subjectId === id && s.date >= today && ['planned', 'in_progress'].includes(s.status)).sort((a, b) => (a.date === b.date ? a.order - b.order : a.date < b.date ? -1 : 1));
@@ -120,6 +122,7 @@ export function SubjectScreen() {
       )}
       {retests.length > 0 && <p className="mt-2 text-sm text-muted">{retests.length} retest{retests.length === 1 ? '' : 's'} planned.</p>}
 
+      <SyllabusCard subjectId={id} />
       <SectionTitle action={<button onClick={() => setImportOpen(true)} className="inline-flex min-h-[36px] items-center gap-1 text-sm font-semibold text-primary"><Plus size={15} /> Add topics</button>}>
         Topics
       </SectionTitle>
@@ -135,12 +138,12 @@ export function SubjectScreen() {
             {filtered.map((t) => {
               const m = computeMastery(attempts.filter((a) => a.topicId === t.id));
               return (
-                <Link key={t.id} to={`/topics/${t.id}`} className={cx('flex min-h-[56px] items-center gap-3 px-4 py-3', t.parentTopicId && 'pl-8')}>
+                <Link key={t.id} to={`/topics/${t.id}`} className={cx('flex min-h-[56px] items-center gap-3 px-4 py-3', t.parentTopicId && 'pl-8', isParent(t.id) && 'bg-sunken/60 font-semibold')}>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[15px] leading-snug" lang="und">{t.syllabusReference && <span className="mr-1.5 text-muted">{t.syllabusReference}</span>}{t.title}</span>
                     {t.inMock && <span className="text-[12px] font-medium text-primary">In Mock 2</span>}
                   </span>
-                  <MasteryPill state={m.state} provisional={m.provisional} />
+                  {isParent(t.id) ? <span className="text-[12px] text-muted">{topics.filter((c) => c.parentTopicId === t.id).length} subtopics</span> : <MasteryPill state={m.state} provisional={m.provisional} />}
                 </Link>
               );
             })}
@@ -232,5 +235,38 @@ function SubjectEditSheet({ open, onClose, subjectId }: { open: boolean; onClose
         </Field>
       </div>
     </Sheet>
+  );
+}
+
+function SyllabusCard({ subjectId }: { subjectId: SubjectId }) {
+  const status = useLiveQuery(() => syllabusStatus(subjectId), [subjectId]);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  if (status === undefined) return null;
+  if (status === null)
+    return subjectId === 'economics' ? (
+      <p className="mt-6 rounded-xl bg-sunken p-3 text-sm text-muted">The official Economics topic list isn’t built in yet. Add topics below, or it will be added in an update once the syllabus is supplied.</p>
+    ) : null;
+  const { pack, total, present } = status;
+  return (
+    <Card className="mt-6 p-4">
+      <p className="font-semibold">Official syllabus {pack.code} · {pack.years}</p>
+      <p className="mt-0.5 text-[13px] text-muted">{pack.source}</p>
+      {present >= total ? (
+        <p className="mt-2 text-sm text-green">All {total} syllabus topics are loaded.</p>
+      ) : (
+        <>
+          <p className="mt-2 text-sm">{present ? `${present} of ${total} loaded.` : `${total} topics and subtopics, in Cambridge’s own numbering.`} Loading adds what’s missing — it never changes or removes your own topics or progress.</p>
+          <Button className="mt-3 w-full" disabled={busy} onClick={async () => {
+            setBusy(true);
+            const n = await loadSyllabus(subjectId);
+            await regenerateFuture(addDays(localDate(), 1), 'Syllabus topics loaded');
+            setBusy(false);
+            setMsg(`${n} topics added. Sessions from tomorrow now rotate through the whole syllabus.`);
+          }}>{busy ? 'Loading…' : 'Load syllabus topics'}</Button>
+        </>
+      )}
+      {msg && <p role="status" className="mt-2 text-sm font-medium text-primary">{msg}</p>}
+    </Card>
   );
 }

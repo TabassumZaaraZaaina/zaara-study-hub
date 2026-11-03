@@ -7,6 +7,7 @@ import {
 } from '@/scheduling/carryover';
 import type { ISODate, PaceMode, PlanConfig, StudentProfile, StudySession, SubjectId } from '@/types';
 import { addDays, fmtShort, localDate, nowISO } from '@/utils/dates';
+import { applyPackCorrections } from './topics';
 import { addNotices, defaultConfig, getConfig, getMeta, log, setMeta, uid } from './meta';
 
 /** First run: seed confirmed facts only. Safe to call on every start. */
@@ -19,6 +20,7 @@ export async function initialiseDatabase() {
       await db.meta.put({ key: 'profile', value: p });
     }
   });
+  await applyPackCorrections();
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => undefined);
 }
 

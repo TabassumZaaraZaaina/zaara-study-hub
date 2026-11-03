@@ -27,7 +27,8 @@ export function ProgressScreen() {
   const w = wins(today, topics, attempts, repairs);
   const upcoming = exams.filter((e) => e.date && e.date >= today).sort((a, b) => (a.date! < b.date! ? -1 : 1)).slice(0, 3);
   const recent = [...attempts].sort((a, b) => (a.completedAt < b.completedAt ? 1 : -1)).slice(0, 5);
-  const activeTopics = topics.filter((t) => t.active);
+  const parentIds = new Set(topics.filter((t) => t.active).map((t) => t.parentTopicId).filter(Boolean));
+  const activeTopics = topics.filter((t) => t.active && !parentIds.has(t.id));
   const now: Record<MasteryState, number> = { unassessed: 0, red: 0, amber: 0, green: 0 };
   const before: Record<MasteryState, number> = { unassessed: 0, red: 0, amber: 0, green: 0 };
   for (const t of activeTopics) {

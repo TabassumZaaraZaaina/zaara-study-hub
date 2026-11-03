@@ -7,6 +7,7 @@ import { useSubjectMap, useTopics } from '@/hooks/data';
 import { moveSession, reorderDay, setPlannedMode, setTemplate, setTopics, skipSession } from '@/services/plan';
 import { sessionTitle, statusInfo } from '@/components/session';
 import { Button, Chip, Field, Segmented, Sheet } from '@/components/ui';
+import { TopicOptions } from '@/components/TopicOptions';
 import type { ISODate, PaceMode, StudySession } from '@/types';
 import { fmtShort, isValidISODate } from '@/utils/dates';
 
@@ -72,7 +73,7 @@ export function SessionEditor({ session, onClose, today }: { session: StudySessi
             <Field label="Topic">
               <select className="field" value={s.topicIds[0] ?? ''} onChange={(e) => run(() => setTopics(s.id, e.target.value ? [e.target.value] : []), 'Topic updated.')}>
                 <option value="">No specific topic / mixed</option>
-                {subjectTopics.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+                <TopicOptions topics={subjectTopics} />
               </select>
             </Field>
           )}

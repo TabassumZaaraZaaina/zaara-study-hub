@@ -68,6 +68,9 @@ describe('plan generation', () => {
     expect(t.approximate).toBe(true);
     const during = nextExamFor('physics', '2026-11-30', []);
     expect(during.inPeriodUnknown).toBe(true);
+    // Without entered dates the assumed mock window ends after 14 days — no endless exam mode.
+    expect(nextExamFor('physics', '2026-12-12', []).inPeriodUnknown).toBe(false);
+    expect(nextExamFor('physics', '2026-12-12', []).label).toMatch(/Finals/);
   });
 
   it('gives more weight to subjects with weak topics', () => {

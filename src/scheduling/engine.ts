@@ -36,6 +36,12 @@ export const PRIORITY = {
   examWeekDays: 7,
   /** Recent window used to measure each subject's share of time. */
   fairnessWindowDays: 14,
+  /**
+   * ASSUMPTION used only while no Mock 2 paper dates are entered: the mock
+   * period is treated as lasting this many days from its confirmed start.
+   * Without this, the plan would stay in exam mode indefinitely.
+   */
+  assumedMockWindowDays: 14,
   /** On an exam day, study capacity is reduced to this fraction. */
   examDayCapacity: 0.5,
   /** Carry-over search window when no exam is sooner. */
@@ -104,7 +110,7 @@ export function nextExamFor(subjectId: SubjectId, date: ISODate, exams: Exam[]):
   }
   if (!mockAllDone && mockUnknown && mock.startDate) {
     if (date < mock.startDate) return { date: mock.startDate, approximate: true, label: 'Mock 2 period', inPeriodUnknown: false };
-    return { date: null, approximate: true, label: 'Mock 2 (date not entered)', inPeriodUnknown: true };
+    if (diffDays(mock.startDate, date) < PRIORITY.assumedMockWindowDays) return { date: null, approximate: true, label: 'Mock 2 (date not entered)', inPeriodUnknown: true };
   }
   return { date: null, approximate: true, label: 'Finals (dates not entered)', inPeriodUnknown: false };
 }
@@ -180,32 +186,62 @@ function pickTemplate(subjectId: SubjectId, target: ExamTarget, date: ISODate, c
   return TEMPLATE_BY_ID[cycle[cycleIndex % cycle.length]];
 }
 
+/** Topics that sessions are planned on: active topics with no active subtopics. */
+export function schedulableTopics(topics: Topic[], subjectId: SubjectId): Topic[] {
+  const active = topics.filter((t) => t.subjectId === subjectId && t.active);
+  const parents = new Set(active.map((t) => t.parentTopicId).filter(Boolean));
+  return active.filter((t) => !parents.has(t.id)).sort((a, b) => a.order - b.order);
+}
+
 /** Topics eligible for a subject on a date (Mock 2 coverage first, if entered). */
 export function eligibleTopics(topics: Topic[], subjectId: SubjectId, date: ISODate, exams: Exam[]): Topic[] {
-  const active = topics.filter((t) => t.subjectId === subjectId && t.active).sort((a, b) => a.order - b.order);
+  const leaves = schedulableTopics(topics, subjectId);
   const target = nextExamFor(subjectId, date, exams);
   const preMock = target.label.startsWith('Mock 2');
   if (preMock) {
-    const covered = active.filter((t) => t.inMock);
+    const covered = leaves.filter((t) => t.inMock || (t.parentTopicId && topics.find((p) => p.id === t.parentTopicId)?.inMock));
     if (covered.length) return covered;
   }
-  return active;
+  return leaves;
 }
 
+const topicScore = (t: Topic, usage: Map<string, number>, mastery: Record<string, MasteryState>) => {
+  const m = mastery[t.id];
+  return (usage.get(t.id) ?? 0) - (m === 'red' ? 1.5 : m === 'amber' ? 0.5 : 0);
+};
+
 /**
- * Choose a topic: least-practised first, with weak topics pulled forward.
- * score = sessionsSoFar − 1.5 (Needs practice) − 0.5 (Developing); ties → syllabus order.
+ * Choose a topic with interleaving: first the main topic (group of subtopics)
+ * that has had the least practice per subtopic, then the least-practised
+ * subtopic inside it. Weak topics are pulled forward:
+ *   subtopic score = sessions so far − 1.5 (Needs practice) − 0.5 (Developing)
+ *   group score    = average subtopic score; ties → syllabus order.
+ * This spreads sessions across the whole syllabus instead of working through it
+ * front to back — important when an exam covers everything.
  */
 export function pickTopic(candidates: Topic[], usage: Map<string, number>, mastery: Record<string, MasteryState>): Topic | null {
   if (!candidates.length) return null;
-  let best: Topic | null = null;
-  let bestScore = Infinity;
+  const groups = new Map<string, Topic[]>();
   for (const t of candidates) {
-    const m = mastery[t.id];
-    const score = (usage.get(t.id) ?? 0) - (m === 'red' ? 1.5 : m === 'amber' ? 0.5 : 0);
+    const k = t.parentTopicId ?? t.id;
+    groups.set(k, [...(groups.get(k) ?? []), t]);
+  }
+  let bestGroup: Topic[] | null = null;
+  let bestScore = Infinity;
+  for (const g of groups.values()) {
+    const score = g.reduce((s, t) => s + topicScore(t, usage, mastery), 0) / g.length;
     if (score < bestScore - 1e-9) {
-      best = t;
       bestScore = score;
+      bestGroup = g;
+    }
+  }
+  let best: Topic | null = null;
+  let leafBest = Infinity;
+  for (const t of bestGroup!) {
+    const sc = topicScore(t, usage, mastery);
+    if (sc < leafBest - 1e-9) {
+      leafBest = sc;
+      best = t;
     }
   }
   return best;
@@ -316,7 +352,7 @@ export function generatePlan(ctx: PlanContext, from: ISODate, to: ISODate): Stud
       const template = pickTemplate(chosen.subjectId, chosen.target, date, idx);
       cycleIdx.set(chosen.subjectId, idx + 1);
       let topicIds: string[] = [];
-      if (template.purpose === 'learn' || template.purpose === 'practice') {
+      if (template.purpose === 'learn' || template.purpose === 'practice' || template.id === 'exam-prep') {
         const topic = pickTopic(eligibleTopics(ctx.topics, chosen.subjectId, date, exams), usage, mastery);
         if (topic) {
           topicIds = [topic.id];

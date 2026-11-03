@@ -43,14 +43,15 @@ All data is stored in this browser's IndexedDB on this device. It survives reloa
 
 Each of these changes re-plans **only untouched future sessions**. Completed, started, moved and hand-edited sessions, repairs, retests and history are never replaced.
 
-**Pre-filled facts only:** the six subjects, Physics syllabus 5054 with its Papers 1–3, Mock 2 starting 28 Nov 2026, Finals in the May/June 2027 series, and the Asia/Dhaka timezone. All other syllabus codes, papers, topics and exam dates are left *pending* until you enter them.
+**Pre-filled facts only:** the six subjects, Mock 2 starting 28 Nov 2026, Finals in the May/June 2027 series, the Asia/Dhaka timezone, and official topic lists, codes and papers taken from the Cambridge syllabus PDFs supplied by the family (`src/data/syllabus.ts`): Physics 5054 (2026–2028), Chemistry 5070 (2026–2028), Mathematics D 4024 (2025–2027), Additional Mathematics 4037 (2025–2027), Bengali 3204 (2027) and Economics 2281 (2027–2029). Chemistry lists Paper 3 (Practical Test) only, because Zaara sits the practical. Setup loads these lists; existing installs use *Subjects → subject → Load syllabus topics*, which adds only what's missing. Bengali's syllabus has no topic list, so its units are the official paper sections. Additional Mathematics uses Cambridge's 14 topics, with Calculus split at 14.9/14.10. Exam dates remain *pending* until entered.
 
 ## How the scheduling works (`src/scheduling/`)
 
 - **Generation:** the plan runs 56 days ahead and is extended automatically. Each day's free minutes (capacity, minus commitments, minus existing sessions) become Full 90-minute blocks, plus one Steady 45-minute block if at least 45 minutes remain. Exam days get half capacity.
 - **Choosing a subject:** weighted fair queuing on `weight × urgency × weakFactor`. Urgency rises at 28, 14, 7 and 3 days before that subject's next exam; if no paper date is entered, the confirmed Mock 2 start is the target. There is at most one session per subject per day, and a penalty for stacking two demanding subjects back to back.
 - **Exam week:** a subject with a known paper within 7 days gets a slot every day, soonest exam first, and switches to exam-prep and timed templates within 10 days.
-- **Topics:** least-practised first, with *Needs practice* topics pulled forward. Before Mock 2, only Mock 2 coverage is used if it has been set.
+- **Topics:** sessions are planned on the lowest-level topics only, never on headings. They **interleave**: the main area with the least practice goes next, then the least-practised subtopic within it, with *Needs practice* topics pulled forward. Before Mock 2, only Mock 2 coverage is used if it has been set.
+- **Mock 2 without paper dates:** the plan is in exam mode from 28 Nov for at most 14 days (`PRIORITY.assumedMockWindowDays`, an explicit assumption). After that it returns to finals preparation instead of staying in exam mode indefinitely.
 - **Explanations:** every session stores a plain-language reason built only from recorded facts.
 - **Missed work (`carryover.ts`):** at each new Dhaka day, past unfinished sessions become *missed* or *partial*. Their progress and original date are kept, and nothing is ever marked complete. Essential ones are placed, in order of preference:
   1. a day with genuinely free time before the subject's next exam (within 7 days);
@@ -92,7 +93,7 @@ Screens only call `services/*`, so a future sync backend can replace the Dexie c
 
 ## Tests
 
-- `npm test` runs **47 tests across 4 files, all passing**. They cover scheduling (valid dates, capacity, unavailable days, exam prioritisation, exam-day halving, regeneration that preserves work, no duplicates, exam-date changes), missed work (reconcile, the Add Maths shift, free-slot preference, the exam deadline, backlog), progress (Full/Steady/Light maths, day and week counts, evidence thresholds), mastery transitions, the full repair → retest flow, persistence across reopen, returning after several days, rest days, skip and quick-check, backup round-trip and rejection, Dhaka day boundaries, and Bangla topic parsing.
+- `npm test` runs **51 tests across 5 files, all passing**. They now also cover the six syllabus packs (codes, counts, numbering, Chemistry Paper 4 removal), idempotent syllabus loading that preserves hand-added topics, interleaving and the mock-window fallback. They cover scheduling (valid dates, capacity, unavailable days, exam prioritisation, exam-day halving, regeneration that preserves work, no duplicates, exam-date changes), missed work (reconcile, the Add Maths shift, free-slot preference, the exam deadline, backlog), progress (Full/Steady/Light maths, day and week counts, evidence thresholds), mastery transitions, the full repair → retest flow, persistence across reopen, returning after several days, rest days, skip and quick-check, backup round-trip and rejection, Dhaka day boundaries, and Bangla topic parsing.
 - `tests/e2e/smoke.cjs` is a Playwright walkthrough at 375 px in light and dark themes. It covers setup, a session, a score, marking, a reload, schedule, Bangla topics, progress, a repair, an exam entry, loading and clearing sample data, and an **offline reload**. It checks for no console errors and no horizontal overflow. Both themes pass.
 
 ## Implemented vs deferred

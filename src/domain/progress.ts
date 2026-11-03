@@ -84,7 +84,9 @@ export function subjectSummary(
   attempts: AssessmentAttempt[],
   mastery: Record<string, MasteryState>
 ): SubjectSummary {
-  const ts = topics.filter((t) => t.subjectId === subjectId && t.active);
+  const active = topics.filter((t) => t.subjectId === subjectId && t.active);
+  const parents = new Set(active.map((t) => t.parentTopicId).filter(Boolean));
+  const ts = active.filter((t) => !parents.has(t.id)); // subtopics only, so parents don't count twice
   const done = sessions.filter((s) => s.subjectId === subjectId && s.status === 'completed');
   const practised = new Set(done.flatMap((s) => s.topicIds));
   const counts: Record<MasteryState, number> = { unassessed: 0, red: 0, amber: 0, green: 0 };

@@ -11,7 +11,8 @@ import { addFocusMinutes, completeSession, setActivityDone, startSession, type C
 import { doToday, setTopics } from '@/services/plan';
 import { sessionTitle } from '@/components/session';
 import { Bar, Button, Card, Chip, SubjectGlyph, SubjectTag, cx } from '@/components/ui';
-import type { PaceMode } from '@/types';
+import type { PaceMode, Topic } from '@/types';
+import { TopicOptions } from '@/components/TopicOptions';
 import { fmtMinutes, fmtShort } from '@/utils/dates';
 
 const MODE_TEXT: Record<PaceMode, string> = {
@@ -206,7 +207,7 @@ export function SessionScreen() {
   );
 }
 
-function TopicPicker({ topics, onPick }: { topics: { id: string; title: string }[]; onPick: (id: string) => void }) {
+function TopicPicker({ topics, onPick }: { topics: Topic[]; onPick: (id: string) => void }) {
   if (!topics.length)
     return (
       <p className="mt-4 rounded-xl bg-sunken p-3 text-sm text-muted">
@@ -218,7 +219,7 @@ function TopicPicker({ topics, onPick }: { topics: { id: string; title: string }
       <span className="label">Which topic will you work on?</span>
       <select className="field" defaultValue="" onChange={(e) => e.target.value && onPick(e.target.value)}>
         <option value="">Choose a topic…</option>
-        {topics.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+        <TopicOptions topics={topics} />
       </select>
     </label>
   );

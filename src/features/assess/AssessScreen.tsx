@@ -8,6 +8,7 @@ import { useSubjects, useToday, useTopics } from '@/hooks/data';
 import { addError, recordAttempt, updateAttemptMarking, type RecordResult } from '@/services/assess';
 import { uid } from '@/services/meta';
 import { Button, Card, Field, PageHeader, Segmented, cx } from '@/components/ui';
+import { TopicOptions } from '@/components/TopicOptions';
 import type { AssessmentType, Assistance, Confidence, ErrorCategory, QuestionSource, SubjectId } from '@/types';
 import { nowISO } from '@/utils/dates';
 
@@ -114,7 +115,7 @@ export function AssessScreen() {
         <Field label="Topic" hint={subjectTopics.length ? undefined : 'No topics listed for this subject yet — the result is saved at subject level.'}>
           <select className="field" value={topicId} onChange={(ev) => setTopic(ev.target.value)} disabled={!subjectTopics.length}>
             <option value="">Mixed / whole paper</option>
-            {subjectTopics.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
+            <TopicOptions topics={subjectTopics} />
           </select>
         </Field>
         <div className="grid grid-cols-2 gap-3">
