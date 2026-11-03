@@ -135,23 +135,35 @@ export function packPaper(subjectId: SubjectId, paperId: string): MockPaper {
 }
 
 /**
- * The suggested Mock 2 home-mock series (2026 May/June papers), hardest subjects
- * first so their weak topics get the most repair time. Economics uses the
- * old-format timings because all available Economics papers predate the 2027 syllabus.
+ * The suggested Mock 2 home-mock series (2026 May/June papers). Mock 2 starts
+ * 25 Nov, so the series ends Sat 21 Nov: 22–24 Nov stay free for marking,
+ * repair and a light day before the mock. Hardest subjects first so their weak
+ * topics get the most repair time. The shorter multiple-choice papers and
+ * Bangla Paper 2 are left out to protect repair time — do them as normal timed
+ * practice if there's room. Economics uses the old-format timing because all
+ * its past papers predate the 2027 syllabus.
  */
 export const SUGGESTED_SERIES: { date: ISODate; subjectId: SubjectId; paperId: string; minutes?: number; note?: string }[] = [
   { date: '2026-11-07', subjectId: 'addmath', paperId: 'p1' },
   { date: '2026-11-07', subjectId: 'physics', paperId: 'p2' },
-  { date: '2026-11-11', subjectId: 'addmath', paperId: 'p2' },
-  { date: '2026-11-11', subjectId: 'physics', paperId: 'p1' },
-  { date: '2026-11-14', subjectId: 'mathd', paperId: 'p1' },
-  { date: '2026-11-14', subjectId: 'chemistry', paperId: 'p2' },
+  { date: '2026-11-11', subjectId: 'mathd', paperId: 'p1' },
+  { date: '2026-11-11', subjectId: 'chemistry', paperId: 'p2' },
+  { date: '2026-11-14', subjectId: 'addmath', paperId: 'p2' },
+  { date: '2026-11-14', subjectId: 'english', paperId: 'p1' },
   { date: '2026-11-18', subjectId: 'mathd', paperId: 'p2' },
-  { date: '2026-11-18', subjectId: 'chemistry', paperId: 'p1' },
+  { date: '2026-11-18', subjectId: 'english', paperId: 'p2' },
   { date: '2026-11-21', subjectId: 'economics', paperId: 'p2', minutes: 135, note: 'old format: 2 h 15 min' },
-  { date: '2026-11-21', subjectId: 'bangla', paperId: 'p1' },
-  { date: '2026-11-25', subjectId: 'bangla', paperId: 'p2' },
-  { date: '2026-11-25', subjectId: 'economics', paperId: 'p1', minutes: 45, note: 'old format: 45 min' }
+  { date: '2026-11-21', subjectId: 'bangla', paperId: 'p1' }
+];
+
+/** The first (12-paper) series, for re-arranging bookings made before Mock 2 moved to 25 Nov. */
+export const OLD_SERIES_V1: { date: ISODate; subjectId: SubjectId; paperId: string }[] = [
+  { date: '2026-11-07', subjectId: 'addmath', paperId: 'p1' }, { date: '2026-11-07', subjectId: 'physics', paperId: 'p2' },
+  { date: '2026-11-11', subjectId: 'addmath', paperId: 'p2' }, { date: '2026-11-11', subjectId: 'physics', paperId: 'p1' },
+  { date: '2026-11-14', subjectId: 'mathd', paperId: 'p1' }, { date: '2026-11-14', subjectId: 'chemistry', paperId: 'p2' },
+  { date: '2026-11-18', subjectId: 'mathd', paperId: 'p2' }, { date: '2026-11-18', subjectId: 'chemistry', paperId: 'p1' },
+  { date: '2026-11-21', subjectId: 'economics', paperId: 'p2' }, { date: '2026-11-21', subjectId: 'bangla', paperId: 'p1' },
+  { date: '2026-11-25', subjectId: 'bangla', paperId: 'p2' }, { date: '2026-11-25', subjectId: 'economics', paperId: 'p1' }
 ];
 
 /** After booking, re-balance untouched future sessions so each subject's mock time counts toward its share. */

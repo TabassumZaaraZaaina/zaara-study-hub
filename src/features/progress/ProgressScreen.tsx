@@ -78,7 +78,7 @@ export function ProgressScreen() {
         </>
       )}
 
-      <SectionTitle>Six subjects</SectionTitle>
+      <SectionTitle>All subjects</SectionTitle>
       <div className="space-y-2">
         {subjects.map((s) => {
           const sum = subjectSummary(s.id, topics, sessions, attempts, mastery);

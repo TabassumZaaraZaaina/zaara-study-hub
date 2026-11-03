@@ -16,7 +16,7 @@ export function SubjectsScreen() {
   const mastery = useMastery(topics, attempts);
   return (
     <div className="animate-rise">
-      <PageHeader title="Subjects" subtitle="Six separate subjects, one plan." />
+      <PageHeader title="Subjects" subtitle={`${subjects.length} separate subjects, one plan.`} />
       <div className="space-y-3">
         {subjects.map((s) => {
           const sum = subjectSummary(s.id, topics, sessions, attempts, mastery);

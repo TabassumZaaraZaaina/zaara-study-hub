@@ -11,7 +11,7 @@
 export type ISODate = string; // YYYY-MM-DD (Asia/Dhaka local date)
 export type ISOInstant = string; // full ISO timestamp (UTC)
 
-export type SubjectId = 'bangla' | 'economics' | 'physics' | 'chemistry' | 'mathd' | 'addmath';
+export type SubjectId = 'bangla' | 'english' | 'economics' | 'physics' | 'chemistry' | 'mathd' | 'addmath';
 
 /** Student-facing pacing. Internally: full / reduced / recovery. */
 export type PaceMode = 'full' | 'steady' | 'light';

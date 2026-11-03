@@ -91,7 +91,10 @@ describe('home mocks', () => {
     const rs = await bookSuggestedSeries('2026-11-10');
     expect(rs).toHaveLength(SUGGESTED_SERIES.filter((x) => x.date >= '2026-11-10').length);
     await bookSuggestedSeries('2026-11-10');
-    expect(await db.sessions.where('source').equals('homemock').count()).toBe(10);
+    expect(await db.sessions.where('source').equals('homemock').count()).toBe(SUGGESTED_SERIES.filter((x) => x.date >= '2026-11-10').length);
+    // nothing on or after the Mock 2 start, and the last three days before it stay free of papers
+    expect(SUGGESTED_SERIES.every((x) => x.date <= '2026-11-21')).toBe(true);
+    expect(SUGGESTED_SERIES.some((x) => x.subjectId === 'english')).toBe(true);
     const econ = (await db.sessions.where('source').equals('homemock').toArray()).find((s) => s.subjectId === 'economics' && s.mockPaper?.paperId === 'p2')!;
     expect(econ.mockPaper!.minutes).toBe(135);
   });

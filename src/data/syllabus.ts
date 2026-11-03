@@ -1381,6 +1381,64 @@ export const SYLLABUS_PACKS: SyllabusPack[] = [
     ]
   },
   {
+    "subjectId": "english",
+    "code": "1123",
+    "years": "2027–2028",
+    "source": "Cambridge O Level English Language 1123 syllabus for 2027 and 2028, section 4 Details of the assessment (no topic list in this syllabus — units are the paper sections)",
+    "papers": [
+      {
+        "id": "p1",
+        "name": "Paper 1 — Reading (2 h, 50 marks, 50%)"
+      },
+      {
+        "id": "p2",
+        "name": "Paper 2 — Writing (2 h, 50 marks, 50%)"
+      }
+    ],
+    "topics": [
+      {
+        "ref": "P1",
+        "title": "Paper 1 — Reading",
+        "children": [
+          {
+            "ref": "P1 Q1",
+            "title": "Comprehension: explicit and implicit meanings (Text A, narrative)"
+          },
+          {
+            "ref": "P1 Q2",
+            "title": "Use of language: how writers achieve effects"
+          },
+          {
+            "ref": "P1 Q3a",
+            "title": "Summary (no more than 150 words, Text B)"
+          },
+          {
+            "ref": "P1 Q3b",
+            "title": "Short response: implicit meanings and attitudes"
+          }
+        ]
+      },
+      {
+        "ref": "P2",
+        "title": "Paper 2 — Writing",
+        "children": [
+          {
+            "ref": "P2 A",
+            "title": "Directed writing: speech, email, report, letter or article (about 250–350 words)"
+          },
+          {
+            "ref": "P2 B",
+            "title": "Composition: descriptive (about 350–450 words)"
+          },
+          {
+            "ref": "P2 B",
+            "title": "Composition: narrative (about 350–450 words)"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "subjectId": "bangla",
     "code": "3204",
     "years": "2027",

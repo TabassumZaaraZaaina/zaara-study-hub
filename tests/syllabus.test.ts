@@ -27,6 +27,11 @@ describe('syllabus packs', () => {
     expect(by.economics.topics).toHaveLength(6);
     expect(by.economics.topics.flatMap((t) => t.children ?? [])).toHaveLength(36);
     expect(by.chemistry.papers.map((p) => p.id)).toEqual(['p1', 'p2', 'p3']);
+    expect(by.english.code).toBe('1123');
+    expect(by.english.years).toBe('2027–2028');
+    expect(by.english.papers.map((p) => p.name)).toEqual(['Paper 1 — Reading (2 h, 50 marks, 50%)', 'Paper 2 — Writing (2 h, 50 marks, 50%)']);
+    expect(by.english.topics.flatMap((t) => t.children ?? [])).toHaveLength(7);
+    expect(SYLLABUS_PACKS).toHaveLength(7);
     // every subtopic ref sits under its parent number
     for (const k of ['physics', 'chemistry', 'mathd', 'economics'])
       for (const t of by[k].topics) for (const c of t.children ?? []) expect(c.ref.split('.')[0]).toBe(t.ref);
@@ -58,7 +63,7 @@ describe('loading a syllabus', () => {
     expect((await db.subjects.get('chemistry'))!.papers.map((p) => p.id)).toEqual(['p1', 'p2', 'p3', 'x']);
   });
 
-  it('setup loads all six packs by default', async () => {
+  it('setup loads all seven packs by default', async () => {
     for (const t of ALL_TABLES) await db.table(t).clear();
     await completeSetup({ config: {} }, TODAY);
     expect(await db.topics.count()).toBe(SYLLABUS_PACKS.reduce((n, p) => n + p.topics.length + p.topics.flatMap((t) => t.children ?? []).length, 0));

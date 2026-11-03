@@ -46,7 +46,7 @@ export function SetupScreen() {
             <p className="text-sm font-semibold">Already set up</p>
             <div className="mt-3 flex flex-wrap gap-2">{SUBJECTS.map((s) => <span key={s.id} className="inline-flex items-center gap-2 rounded-full bg-sunken py-1 pl-1 pr-3 text-sm"><SubjectGlyph id={s.id} size={24} />{s.name}</span>)}</div>
             <ul className="mt-4 space-y-1.5 text-sm">
-              <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Mock 2 starts 28 November 2026 — {diffDays(today, '2026-11-28')} days away</li>
+              <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Mock 2 starts 25 November 2026 — {diffDays(today, '2026-11-25')} days away</li>
               <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Final O Levels: May/June 2027 series</li>
               <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Days run on Bangladesh time</li>
             </ul>

@@ -20,7 +20,7 @@ export function validateExam(e: Pick<Exam, 'group' | 'date' | 'durationMinutes' 
   if (e.date && !isValidISODate(e.date)) errors.push('That date isn’t valid.');
   if (e.durationMinutes !== null && !(e.durationMinutes > 0 && e.durationMinutes <= 300)) errors.push('Duration should be between 1 and 300 minutes.');
   if (e.startTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(e.startTime)) errors.push('Start time should look like 09:00.');
-  if (e.date && e.group === 'mock2' && e.date < MILESTONES[0].startDate!) warnings.push('Mock 2 is confirmed to start on 28 November 2026 — please double-check this date.');
+  if (e.date && e.group === 'mock2' && e.date < MILESTONES[0].startDate!) warnings.push('Mock 2 is confirmed to start on 25 November 2026 — please double-check this date.');
   if (e.date && e.group === 'final' && (e.date < '2027-04-01' || e.date > '2027-07-15')) warnings.push('This is outside the May/June 2027 series — please double-check.');
   return { errors, warnings };
 }
@@ -80,7 +80,7 @@ export function ExamsScreen() {
         </div>
       ) : (
         <Empty icon={<GraduationCap />} title={group === 'mock2' ? 'No Mock 2 papers yet' : 'No final papers yet'} action={<Button size="sm" onClick={() => setEditing('new')}><Plus size={15} /> Add paper</Button>}>
-          {group === 'mock2' ? 'Until you add them, the plan aims everything at 28 November.' : 'Add them from your Cambridge Statement of Entry when you have it.'}
+          {group === 'mock2' ? 'Until you add them, the plan aims everything at 25 November.' : 'Add them from your Cambridge Statement of Entry when you have it.'}
         </Empty>
       )}
 

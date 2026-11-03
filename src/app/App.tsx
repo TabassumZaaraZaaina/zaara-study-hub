@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { HashRouter, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BarChart3, BookOpen, CalendarDays, Inbox, Sun } from 'lucide-react';
 import { initialiseDatabase, dailyMaintenance } from '@/services/plan';
+import { runMigrations } from '@/services/migrations';
 import { useHasDemo, useProfile, useSettings, useToday } from '@/hooks/data';
 import { cx } from '@/components/ui';
 import { UpdatePrompt } from './UpdatePrompt';
@@ -139,6 +140,7 @@ export function App() {
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => {
     initialiseDatabase()
+      .then(() => runMigrations())
       .then(() => setReady(true))
       .catch((e) => setErr(String(e?.message ?? e)));
   }, []);

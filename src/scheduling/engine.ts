@@ -380,7 +380,7 @@ export function generatePlan(ctx: PlanContext, from: ISODate, to: ISODate): Stud
   return created;
 }
 
-const ORDER: SubjectId[] = ['addmath', 'physics', 'mathd', 'chemistry', 'economics', 'bangla'];
+const ORDER: SubjectId[] = ['addmath', 'physics', 'mathd', 'chemistry', 'economics', 'english', 'bangla'];
 const SUBJECT_ORDER = (id: SubjectId) => ORDER.indexOf(id);
 
 /**

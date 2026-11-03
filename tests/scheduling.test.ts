@@ -44,9 +44,9 @@ describe('plan generation', () => {
     }
   });
 
-  it('covers all six subjects within each week', () => {
+  it('covers all seven subjects within each week', () => {
     const plan = generatePlan(ctx(), TODAY, addDays(TODAY, 6));
-    expect(new Set(plan.map((s) => s.subjectId)).size).toBe(6);
+    expect(new Set(plan.map((s) => s.subjectId)).size).toBe(7);
   });
 
   it('prioritises a subject whose exam is approaching', () => {
@@ -64,7 +64,7 @@ describe('plan generation', () => {
 
   it('uses the confirmed Mock 2 start as the target when paper dates are missing', () => {
     const t = nextExamFor('physics', TODAY, []);
-    expect(t.date).toBe('2026-11-28');
+    expect(t.date).toBe('2026-11-25');
     expect(t.approximate).toBe(true);
     const during = nextExamFor('physics', '2026-11-30', []);
     expect(during.inPeriodUnknown).toBe(true);
@@ -134,7 +134,7 @@ describe('regeneration', () => {
 describe('missed work', () => {
   const setup = () => {
     const c = ctx({ topics: topics('addmath', 6) });
-    const plan = generatePlan(c, TODAY, TO);
+    const plan = generatePlan(c, TODAY, addDays(TODAY, 60)); // long enough for several Add Maths slots
     return { c, plan };
   };
 

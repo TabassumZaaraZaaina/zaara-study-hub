@@ -10,6 +10,10 @@ export const SUBJECTS: Subject[] = [
     papers: [], weight: 0.85, demanding: false, active: true
   },
   {
+    id: 'english', name: 'English Language', shortName: 'English', syllabusCode: null, syllabusVersion: null,
+    papers: [], weight: 0.9, demanding: false, active: true
+  },
+  {
     id: 'economics', name: 'Economics', shortName: 'Econ', syllabusCode: null, syllabusVersion: null,
     papers: [], weight: 0.9, demanding: false, active: true
   },
@@ -41,6 +45,7 @@ export const SUBJECT_IDS = SUBJECTS.map((s) => s.id);
 /** Visual identity per subject. Muted accents; contrast-checked text colours. */
 export const SUBJECT_STYLE: Record<SubjectId, { accent: string; soft: string; ink: string; glyph: string }> = {
   bangla: { accent: '#D9826B', soft: 'var(--s-bangla-soft)', ink: 'var(--s-bangla-ink)', glyph: 'অ' },
+  english: { accent: '#6E9C6A', soft: 'var(--s-eng-soft)', ink: 'var(--s-eng-ink)', glyph: 'Aa' },
   economics: { accent: '#C9A04A', soft: 'var(--s-econ-soft)', ink: 'var(--s-econ-ink)', glyph: '₳' },
   physics: { accent: '#8B7BC8', soft: 'var(--s-physics-soft)', ink: 'var(--s-physics-ink)', glyph: 'Φ' },
   chemistry: { accent: '#3E9E96', soft: 'var(--s-chem-soft)', ink: 'var(--s-chem-ink)', glyph: '⚗' },
@@ -49,7 +54,7 @@ export const SUBJECT_STYLE: Record<SubjectId, { accent: string; soft: string; in
 };
 
 export const MILESTONES: Milestone[] = [
-  { id: 'mock2', label: 'Mock 2', startDate: '2026-11-28', note: 'Start date confirmed. Individual paper dates to be entered.' },
+  { id: 'mock2', label: 'Mock 2', startDate: '2026-11-25', note: 'Start date confirmed (25 November 2026). Individual paper dates to be entered.' },
   { id: 'final', label: 'O Level Finals', startDate: null, note: 'May/June 2027 series. Exact dates to be entered from the Statement of Entry.' }
 ];
 
@@ -227,6 +232,29 @@ export const TEMPLATES: SessionTemplate[] = [
     a('review', 'Self-review', 10, 'mark', 'Review and record your score if marked.', true)
   ], lightRecall('useful Bangla phrases and structures for writing')),
 
+  // ───────────── ENGLISH LANGUAGE ─────────────
+  T('english-reading', 'english', 'Reading practice', 'learn', [
+    a('vocab', 'Vocabulary and techniques recall', 10, 'recall', 'From memory: useful vocabulary and the language techniques you can name (imagery, contrast, tone…). Test yourself before checking.'),
+    a('comprehension', 'Comprehension', 30, 'practice', 'Read a narrative passage and answer questions on explicit and implicit meanings, in your own words where asked.'),
+    a('language', 'Use of language', 20, 'practice', 'Pick words and phrases from the passage and explain the effect the writer creates — not just what they mean.'),
+    a('summary', 'Summary', 20, 'practice', 'Write a summary of no more than 150 words from a second passage, as continuous writing. Count your words.'),
+    a('mark', 'Mark and compare', 10, 'mark', 'Compare with the mark scheme or model answer: which points did you miss? Record your score.', true)
+  ], [
+    a('comprehension', 'Comprehension', 20, 'practice', 'A short passage with comprehension and use-of-language questions.'),
+    a('summary', 'Summary', 15, 'practice', 'A short summary task (no more than 150 words).'),
+    a('mark', 'Mark and compare', 10, 'mark', 'Check your answers and record your score.', true)
+  ], lightRecall('useful vocabulary and language techniques')),
+  T('english-writing', 'english', 'Writing practice', 'exam', [
+    a('plan', 'Plan', 10, 'learn', 'Read the task carefully: audience, purpose, form. Plan your points or story arc before writing.'),
+    a('directed', 'Directed writing', 45, 'timed', 'Write a speech, email, report, letter or article (about 250–350 words) using and evaluating the ideas in the given text(s).'),
+    a('mark', 'Mark against the criteria', 20, 'mark', 'Check content, organisation, register, vocabulary and accuracy against the mark scheme. Record your score.', true),
+    a('composition', 'Composition opening', 15, 'practice', 'Plan a descriptive or narrative composition (350–450 words) and write a strong opening paragraph.')
+  ], [
+    a('plan', 'Plan', 5, 'learn', 'Plan a directed-writing or composition task.'),
+    a('directed', 'Timed writing', 30, 'timed', 'Write under time.'),
+    a('mark', 'Mark', 10, 'mark', 'Check against the criteria and record your score.', true)
+  ], lightRecall('useful phrases and structures for writing')),
+
   // ───────────── SHARED ─────────────
   T('exam-prep', '*', 'Exam preparation', 'exam', [
     a('recall', 'Light recall', 15, 'recall', 'Recall key facts, formulae and definitions for the coming paper.'),
@@ -285,7 +313,8 @@ export const SUBJECT_CYCLE: Record<SubjectId, string[]> = {
   mathd: ['mathd-practice', 'mathd-practice', 'mathd-mixed'],
   addmath: ['addmath-build', 'addmath-build', 'addmath-transfer'],
   economics: ['econ-concept', 'econ-concept', 'econ-written'],
-  bangla: ['bangla-language', 'bangla-writing']
+  bangla: ['bangla-language', 'bangla-writing'],
+  english: ['english-reading', 'english-writing']
 };
 
 export const EXAM_CYCLE: Record<SubjectId, string[]> = {
@@ -294,7 +323,8 @@ export const EXAM_CYCLE: Record<SubjectId, string[]> = {
   mathd: ['exam-prep', 'mathd-mixed'],
   addmath: ['exam-prep', 'addmath-transfer'],
   economics: ['exam-prep', 'econ-written'],
-  bangla: ['exam-prep', 'bangla-writing']
+  bangla: ['exam-prep', 'bangla-writing'],
+  english: ['exam-prep', 'english-writing']
 };
 
 export const MODE_LABEL: Record<PaceMode, string> = { full: 'Full', steady: 'Steady', light: 'Light' };

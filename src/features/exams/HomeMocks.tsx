@@ -31,6 +31,7 @@ export function HomeMocks() {
       {remaining.length > 0 && (
         <Card className="mt-4 p-4">
           <p className="font-semibold">Suggested Mock 2 series · May/June 2026 papers</p>
+          <p className="mt-1 text-[13px] text-muted">Ends Sat 21 Nov, so the days before Mock 2 (25 Nov) stay free for marking, repair and rest. The multiple-choice papers and Bangla Paper 2 aren’t in it — do them as normal timed practice if there’s room.</p>
           <p className="mt-1 text-[13px] text-muted">Add Maths and Maths D first, so their weak topics get the most repair time. Economics uses the old timings because all its past papers predate the 2027 syllabus.</p>
           <ul className="mt-3 space-y-1 text-sm">
             {remaining.map((x, i) => (

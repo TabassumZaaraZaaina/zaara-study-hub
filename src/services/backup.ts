@@ -7,7 +7,7 @@ import { nowISO } from '@/utils/dates';
  * Photos are embedded as data URLs so a backup is self-contained.
  */
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const subjectId = z.enum(['bangla', 'economics', 'physics', 'chemistry', 'mathd', 'addmath']);
+const subjectId = z.enum(['bangla', 'english', 'economics', 'physics', 'chemistry', 'mathd', 'addmath']);
 
 const sessionSchema = z
   .object({

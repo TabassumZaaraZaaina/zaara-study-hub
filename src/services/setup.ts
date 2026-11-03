@@ -23,6 +23,7 @@ export async function completeSetup(input: SetupInput, today: ISODate = localDat
   if (input.exams?.length) await db.exams.bulkPut(input.exams);
   if (input.loadSyllabuses !== false) await loadAllSyllabuses();
   await setMeta('generatedThrough', undefined);
+  await setMeta('dataVersion', 2);
   const created = await ensureHorizon(today);
   await log('setup.complete', 'profile', 'me', `Plan generated: ${created} sessions`);
   return created;
