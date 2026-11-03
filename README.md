@@ -63,6 +63,10 @@ Each of these changes re-plans **only untouched future sessions**. Completed, st
 
 The weights are heuristics, gathered in `PRIORITY` in `engine.ts`. They are not validated science.
 
+## Home mocks (`src/services/homemock.ts`)
+
+Past papers sat at home under exam conditions (*Exam timetable → Home mocks*). A booking adds the paper at its real length plus 5 minutes' set-up, and a 45-minute marking session the next day. Both days are made to fit: an untouched planned session moves to a genuinely free slot in the next week, or is **replaced by the mock**. A replaced session is shown on that day in Schedule, linked to the mock, and comes back if the mock is cancelled. The plan is then re-balanced so each subject's mock time counts toward its share. The session runner shows exam conditions and a countdown, and recording the score pre-fills the paper reference. A one-tap **suggested Mock 2 series** books the twelve 2026 May/June papers (7–25 Nov); Economics uses the old-format timings, because all its past papers predate the 2027 syllabus.
+
 ## Mastery and repair (`src/domain/`)
 
 Mastery is **derived from results, never toggled by hand**:
@@ -93,7 +97,7 @@ Screens only call `services/*`, so a future sync backend can replace the Dexie c
 
 ## Tests
 
-- `npm test` runs **51 tests across 5 files, all passing**. They now also cover the six syllabus packs (codes, counts, numbering, Chemistry Paper 4 removal), idempotent syllabus loading that preserves hand-added topics, interleaving and the mock-window fallback. They cover scheduling (valid dates, capacity, unavailable days, exam prioritisation, exam-day halving, regeneration that preserves work, no duplicates, exam-date changes), missed work (reconcile, the Add Maths shift, free-slot preference, the exam deadline, backlog), progress (Full/Steady/Light maths, day and week counts, evidence thresholds), mastery transitions, the full repair → retest flow, persistence across reopen, returning after several days, rest days, skip and quick-check, backup round-trip and rejection, Dhaka day boundaries, and Bangla topic parsing.
+- `npm test` runs **58 tests across 6 files, all passing**. They now also cover home mocks: paper lengths, making room, the marking session, cancellation, the suggested series, carry-over, and no overloaded days with her real hours. They now also cover the six syllabus packs (codes, counts, numbering, Chemistry Paper 4 removal), idempotent syllabus loading that preserves hand-added topics, interleaving and the mock-window fallback. They cover scheduling (valid dates, capacity, unavailable days, exam prioritisation, exam-day halving, regeneration that preserves work, no duplicates, exam-date changes), missed work (reconcile, the Add Maths shift, free-slot preference, the exam deadline, backlog), progress (Full/Steady/Light maths, day and week counts, evidence thresholds), mastery transitions, the full repair → retest flow, persistence across reopen, returning after several days, rest days, skip and quick-check, backup round-trip and rejection, Dhaka day boundaries, and Bangla topic parsing.
 - `tests/e2e/smoke.cjs` is a Playwright walkthrough at 375 px in light and dark themes. It covers setup, a session, a score, marking, a reload, schedule, Bangla topics, progress, a repair, an exam entry, loading and clearing sample data, and an **offline reload**. It checks for no console errors and no horizontal overflow. Both themes pass.
 
 ## Implemented vs deferred

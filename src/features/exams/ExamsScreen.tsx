@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { GraduationCap, Pencil, Plus } from 'lucide-react';
 import { db } from '@/db/db';
 import { MILESTONES } from '@/data/catalog';
@@ -10,6 +11,7 @@ import { Button, Card, Chip, Empty, Field, PageHeader, SectionTitle, Segmented, 
 import type { Exam, ExamGroup, SubjectId } from '@/types';
 import { addDays, diffDays, fmtLong, fmtShort, isValidISODate } from '@/utils/dates';
 import { nextMilestone } from './countdown';
+import { HomeMocks } from './HomeMocks';
 
 export function validateExam(e: Pick<Exam, 'group' | 'date' | 'durationMinutes' | 'paper' | 'startTime'>): { errors: string[]; warnings: string[] } {
   const errors: string[] = [];
@@ -28,7 +30,9 @@ export function ExamsScreen() {
   const exams = useExams();
   const subjects = useSubjectMap();
   const [editing, setEditing] = useState<Exam | 'new' | null>(null);
-  const [group, setGroup] = useState<ExamGroup>('mock2');
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState<ExamGroup | 'home'>(params.get('tab') === 'home' ? 'home' : 'mock2');
+  const group: ExamGroup = tab === 'home' ? 'mock2' : tab;
   const m = nextMilestone(today, exams, subjects);
   const list = exams.filter((e) => e.group === group).sort((a, b) => ((a.date ?? '9999') + (a.startTime ?? '') < (b.date ?? '9999') + (b.startTime ?? '') ? -1 : 1));
   const mock = MILESTONES[0];
@@ -51,10 +55,11 @@ export function ExamsScreen() {
       </div>
 
       <div className="mt-5">
-        <Segmented<ExamGroup> label="Exam group" value={group} onChange={setGroup} options={[{ value: 'mock2', label: 'Mock 2' }, { value: 'final', label: 'Finals' }]} />
+        <Segmented<ExamGroup | 'home'> label="Exam group" value={tab} onChange={setTab} options={[{ value: 'mock2', label: 'Mock 2' }, { value: 'final', label: 'Finals' }, { value: 'home', label: 'Home mocks' }]} />
       </div>
-      <SectionTitle action={<Button size="sm" variant="soft" onClick={() => setEditing('new')}><Plus size={15} /> Add paper</Button>}>Papers</SectionTitle>
-      {list.length ? (
+      {tab === 'home' && <div className="mt-4"><HomeMocks /></div>}
+      {tab !== 'home' && <SectionTitle action={<Button size="sm" variant="soft" onClick={() => setEditing('new')}><Plus size={15} /> Add paper</Button>}>Papers</SectionTitle>}
+      {tab === 'home' ? null : list.length ? (
         <div className="space-y-2">
           {list.map((e) => (
             <button key={e.id} onClick={() => setEditing(e)} className="flex w-full items-center gap-3 rounded-2xl border border-line/60 bg-surface p-4 text-left shadow-card">

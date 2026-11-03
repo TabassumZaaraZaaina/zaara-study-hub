@@ -7,6 +7,8 @@ import { fmtMinutes, fmtShort } from '@/utils/dates';
 import { Bar, Chip, SubjectGlyph, SubjectTag, cx } from './ui';
 
 export function sessionTitle(s: StudySession, topics: Topic[]): string {
+  if (s.source === 'homemock' && s.mockPaper) return `Home mock · ${s.mockPaper.label.replace(/\s*\(.*\)\s*$/, '')}`;
+  if (s.source === 'homemock-mark') return 'Mark home mock';
   const t = s.topicIds.map((id) => topics.find((x) => x.id === id)?.title).filter(Boolean);
   if (t.length) return t.join(' + ');
   const tpl = TEMPLATE_BY_ID[s.templateId];
@@ -51,6 +53,7 @@ export function SessionCard({ s, subject, topics, today, compact, onEdit, highli
           {s.source === 'repair' && <Chip tone="amber">Repair</Chip>}
           {(s.source === 'retest' || s.source === 'review') && <Chip tone="primary">Retest</Chip>}
           {s.source === 'followup' && <Chip>Follow-up</Chip>}
+          {s.source === 'homemock' && <Chip tone="primary">Mock</Chip>}
         </div>
         <p className={cx('mt-1 font-semibold leading-snug', compact ? 'text-[15px]' : 'text-[17px]')} lang="und">{sessionTitle(s, topics)}</p>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">

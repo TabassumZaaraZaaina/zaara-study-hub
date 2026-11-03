@@ -17,7 +17,7 @@
  * Window: today … min(today + 7, day before the subject's next known exam).
  */
 import type { Exam, ISODate, PlanConfig, StudySession } from '@/types';
-import { activitiesFor, templateMinutes } from '@/data/catalog';
+import { sessionActivities, templateMinutes } from '@/data/catalog';
 import { addDays, dateRange, diffDays, fmtShort } from '@/utils/dates';
 import { PRIORITY, freeOn, nextExamFor, isReplaceable, makeSession, occupies } from './engine';
 
@@ -41,7 +41,7 @@ export function carryQueue(sessions: StudySession[], today: ISODate): StudySessi
 
 export function remainingMinutes(s: StudySession): number {
   const mode = s.mode ?? s.plannedMode;
-  const acts = activitiesFor(s.templateId, mode);
+  const acts = sessionActivities(s, mode);
   const left = acts.filter((a) => !s.completedActivities.includes(a.key)).reduce((t, a) => t + a.minutes, 0);
   return left || s.plannedMinutes;
 }
@@ -52,7 +52,7 @@ export function carryPriority(s: StudySession, today: ISODate, exams: Exam[]): n
   let score = 0;
   if (target.date) score += Math.max(0, 30 - diffDays(today, target.date)); // proximity
   if (target.inPeriodUnknown) score += 15;
-  score += { repair: 12, retest: 10, exam: 8, practice: 6, learn: 5, quick: 1 }[s.purpose] ?? 0;
+  score += { mock: 12, repair: 12, retest: 10, exam: 8, practice: 6, learn: 5, quick: 1 }[s.purpose] ?? 0;
   if (s.status === 'partial') score += 2; // already started, cheaper to finish
   return score;
 }
@@ -92,7 +92,9 @@ export function proposePlacement(
     return { type: 'free', date: preferred, explanation: `${fmtShort(preferred)} had ${freeOn(config, others, exams, preferred)} free minutes.` };
   }
 
-  // 2. SHIFT into the next untouched same-subject slot.
+  // 2. SHIFT into the next untouched same-subject slot (not for home mocks:
+  //    a 2-hour paper can't take a 90-minute slot).
+  if (s.source === 'homemock') return { type: 'none', explanation: `No day before the next deadline has ${need} free minutes for this paper.` };
   const chain = others
     .filter((x) => x.subjectId === s.subjectId && isReplaceable(x, fromDate) && x.purpose !== 'exam')
     .sort((a, b) => (a.date === b.date ? a.order - b.order : a.date < b.date ? -1 : 1));

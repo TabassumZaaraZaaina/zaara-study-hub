@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Check, ChevronLeft, ClipboardCheck, ExternalLink, Pause, Play, Wrench } from 'lucide-react';
 import { db } from '@/db/db';
-import { MODE_LABEL, SUBJECT_STYLE, TEMPLATE_BY_ID, activitiesFor, templateMinutes } from '@/data/catalog';
+import { MODE_LABEL, SUBJECT_STYLE, TEMPLATE_BY_ID, sessionActivities, templateMinutes } from '@/data/catalog';
 import { REPAIR_METHODS } from '@/domain/repair';
 import { sessionProgress } from '@/domain/progress';
 import { useResources, useSubjectMap, useToday, useTopics } from '@/hooks/data';
@@ -53,7 +53,7 @@ export function SessionScreen() {
           <SubjectTag id={s.subjectId} name={subject?.name ?? ''} />
           <p className="truncate text-[15px] font-semibold" lang="und">{sessionTitle(s, topics)}</p>
         </div>
-        {s.mode && !notStarted && (
+        {s.mode && !notStarted && tpl.purpose !== 'mock' && (
           <button onClick={() => setChangingMode(true)} className="min-h-[36px] rounded-full bg-sunken px-3 text-sm font-semibold">{MODE_LABEL[s.mode]}</button>
         )}
       </div>
@@ -74,6 +74,36 @@ export function SessionScreen() {
             <Button onClick={() => nav('/')}>Back to Today</Button>
           </div>
         </Card>
+      </div>
+    );
+  }
+
+  if (notStarted && tpl.purpose === 'mock') {
+    return (
+      <div className="animate-rise">
+        {header}
+        <div className="flex items-center gap-4">
+          <SubjectGlyph id={s.subjectId} size={56} />
+          <div>
+            <h1 className="text-2xl font-semibold leading-tight">Home mock</h1>
+            <p className="text-muted">{s.mockPaper?.label}{s.mockPaper?.reference ? ` · ${s.mockPaper.reference}` : ''}</p>
+          </div>
+        </div>
+        <Card className="mt-5 p-5">
+          <p className="font-semibold">Exam conditions</p>
+          <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[15px]">
+            <li>{s.mockPaper?.minutes} minutes, timed, in one sitting.</li>
+            <li>Closed book: no notes, no NotebookLM, no phone.</li>
+            <li>Don’t open the mark scheme until marking time.</li>
+            <li>Only use a calculator if this paper allows one.</li>
+          </ul>
+          <p className="mt-3 text-[13px] text-muted">If you’ve seen this paper before, it won’t tell you much — swap it for one you haven’t seen.</p>
+        </Card>
+        <Button size="lg" className="mt-5 w-full" onClick={async () => {
+          if (s.date < today) await doToday(s.id, today);
+          await startSession(s.id, 'full');
+        }}><Play size={18} /> I’m ready — start</Button>
+        <p className="mt-3 text-center text-[13px] text-muted">Marking is planned as a separate session afterwards.</p>
       </div>
     );
   }
@@ -128,7 +158,7 @@ export function SessionScreen() {
     );
   }
 
-  const acts = activitiesFor(s.templateId, s.mode!);
+  const acts = sessionActivities(s, s.mode!);
   const currentIdx = acts.findIndex((a) => !s.completedActivities.includes(a.key));
   const allDone = currentIdx === -1;
 
@@ -161,6 +191,7 @@ export function SessionScreen() {
                   assessable={!!a.assessable}
                   accent={style.accent}
                   next={acts[i + 1] ? `${acts[i + 1].title} · ${acts[i + 1].minutes} min` : null}
+                  countdown={a.key === 'sit' && tpl.purpose === 'mock'}
                   onDone={() => setActivityDone(s.id, a.key, true)}
                 />
               ) : (
@@ -225,7 +256,7 @@ function TopicPicker({ topics, onPick }: { topics: Topic[]; onPick: (id: string)
   );
 }
 
-function ActiveActivity(p: { sessionId: string; title: string; minutes: number; instruction: string; assessable: boolean; accent: string; next: string | null; onDone: () => void }) {
+function ActiveActivity(p: { sessionId: string; title: string; minutes: number; instruction: string; assessable: boolean; accent: string; next: string | null; countdown?: boolean; onDone: () => void }) {
   const [running, setRunning] = useState(false);
   const [elapsed, setElapsed] = useState(0); // seconds since last save
   const startRef = useRef<number | null>(null);
@@ -259,9 +290,10 @@ function ActiveActivity(p: { sessionId: string; title: string; minutes: number; 
     };
   }, []);
 
-  const mm = Math.floor(elapsed / 60);
-  const ss = String(elapsed % 60).padStart(2, '0');
   const over = elapsed > p.minutes * 60;
+  const shown = p.countdown ? Math.max(0, p.minutes * 60 - elapsed) : elapsed;
+  const mm = Math.floor(shown / 60);
+  const ss = String(shown % 60).padStart(2, '0');
   return (
     <Card className="animate-rise overflow-hidden p-0">
       <div className="h-1" style={{ background: p.accent }} />
@@ -274,10 +306,12 @@ function ActiveActivity(p: { sessionId: string; title: string; minutes: number; 
         <div className="mt-5 flex items-center gap-3">
           <span className={cx('font-mono text-3xl tabular-nums', over ? 'text-muted' : '')} aria-live="off">{mm}:{ss}</span>
           <Button variant="soft" size="sm" onClick={() => { if (running) flush(); setRunning(!running); }} aria-label={running ? 'Pause timer' : 'Start timer'}>
-            {running ? <><Pause size={15} /> Break</> : <><Play size={15} /> {elapsed ? 'Resume' : 'Start timer'}</>}
+            {running ? <><Pause size={15} /> {p.countdown ? 'Pause' : 'Break'}</> : <><Play size={15} /> {elapsed ? 'Resume' : 'Start timer'}</>}
           </Button>
         </div>
-        {over && <p className="mt-1 text-[13px] text-muted">Past the suggested time — that’s fine. Finish when you’re ready.</p>}
+        {over && !p.countdown && <p className="mt-1 text-[13px] text-muted">Past the suggested time — that’s fine. Finish when you’re ready.</p>}
+        {over && p.countdown && <p role="alert" className="mt-2 rounded-xl bg-amber-soft p-3 font-semibold text-amber">Time’s up — stop writing.</p>}
+        {p.countdown && !over && <p className="mt-1 text-[13px] text-muted">Time remaining. The timer keeps the exam honest — leave it running.</p>}
         {p.assessable && (
           <button onClick={() => nav(`/assess?session=${p.sessionId}`)} className="mt-4 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 text-sm font-semibold text-primary">
             <ClipboardCheck size={16} /> Record your score
@@ -295,7 +329,7 @@ function ActiveActivity(p: { sessionId: string; title: string; minutes: number; 
 function Summary({ result, subjectName, title }: { result: CompletionResult; subjectName: string; title: string }) {
   const nav = useNavigate();
   const s = result.session;
-  const hasMark = activitiesFor(s.templateId, s.mode!).some((a) => a.assessable);
+  const hasMark = sessionActivities(s, s.mode!).some((a) => a.assessable);
   return (
     <div className="animate-rise pt-10 text-center">
       <span className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-soft text-green"><Check size={30} /></span>
@@ -308,6 +342,7 @@ function Summary({ result, subjectName, title }: { result: CompletionResult; sub
       {result.followup && (
         <p className="mx-auto mt-4 max-w-sm rounded-xl bg-sunken p-3 text-sm">The main practice for this topic is planned for <b>{fmtShort(result.followup.date)}</b> as a 45-minute session.</p>
       )}
+      {s.source === 'homemock' && <p className="mx-auto mt-4 max-w-sm rounded-xl bg-sunken p-3 text-sm">Well done for sitting it properly. Marking is planned as its own session — check Schedule for the day.</p>}
       {result.retest && <p className="mx-auto mt-4 max-w-sm rounded-xl bg-sunken p-3 text-sm">An unseen retest is planned for <b>{fmtShort(result.retest.date)}</b>.</p>}
       <div className="mx-auto mt-6 flex max-w-sm flex-col gap-3">
         {hasMark && <Button size="lg" onClick={() => nav(`/assess?session=${s.id}`, { replace: true })}><ClipboardCheck size={18} /> Record your score</Button>}

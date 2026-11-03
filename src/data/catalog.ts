@@ -258,7 +258,19 @@ export const TEMPLATES: SessionTemplate[] = [
     a('retest', 'Unseen short question', 10, 'retest', 'One short unseen question, no notes.'),
     a('mark', 'Mark and record', 5, 'mark', 'Mark and record.', true)
   ]),
-  T('quick-check', '*', 'Quick retrieval check', 'quick', lightRecall('this topic'), lightRecall('this topic'), lightRecall('this topic'))
+  T('quick-check', '*', 'Quick retrieval check', 'quick', lightRecall('this topic'), lightRecall('this topic'), lightRecall('this topic')),
+  // Home mock: sat as one block under exam conditions. 'sit' minutes come from the paper.
+  ...(() => {
+    const sit = [
+      a('prepare', 'Set up exam conditions', 5, 'reflect', 'Clear desk. Phone in another room. No notes, no NotebookLM, no mark scheme. Set out pens, calculator (only if the paper allows it) and water.'),
+      a('sit', 'Sit the paper', 0, 'timed', 'Work under the real time limit. If you finish early, check your answers — don’t open the mark scheme. Stop writing when time is up.')
+    ];
+    const mark = [
+      a('mark', 'Mark with the official mark scheme', 30, 'mark', 'Mark strictly, question by question. For long written answers, ask a parent or teacher to mark. Record the score.', true),
+      a('errors', 'Log lost marks', 15, 'reflect', 'Log each lost mark by type and topic. Pick the two topics that cost the most marks — they become your next repairs.')
+    ];
+    return [T('home-mock', '*', 'Home mock', 'mock', sit, sit, sit), T('mock-mark', '*', 'Mark home mock', 'practice', mark, mark, mark)];
+  })()
 ];
 
 export const TEMPLATE_BY_ID: Record<string, SessionTemplate> = Object.fromEntries(TEMPLATES.map((t) => [t.id, t]));
@@ -287,6 +299,13 @@ export const EXAM_CYCLE: Record<SubjectId, string[]> = {
 
 export const MODE_LABEL: Record<PaceMode, string> = { full: 'Full', steady: 'Steady', light: 'Light' };
 export const MODE_MINUTES: Record<PaceMode, number> = { full: 90, steady: 45, light: 15 };
+
+/** Activities for a session, applying any per-session minute overrides (home mocks). */
+export function sessionActivities(s: { templateId: string; activityMinutes?: Record<string, number> }, mode: PaceMode): ActivitySpec[] {
+  const acts = activitiesFor(s.templateId, mode);
+  const o = s.activityMinutes;
+  return o ? acts.map((x) => (o[x.key] !== undefined ? { ...x, minutes: o[x.key] } : x)) : acts;
+}
 
 export function templateMinutes(templateId: string, mode: PaceMode): number {
   const t = TEMPLATE_BY_ID[templateId];

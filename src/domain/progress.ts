@@ -5,7 +5,7 @@
  *  - assessment performance (recent marks)
  *  - demonstrated mastery (evidence-based topic states)
  */
-import { activitiesFor } from '@/data/catalog';
+import { sessionActivities } from '@/data/catalog';
 import type { AssessmentAttempt, ISODate, MasteryState, StudySession, SubjectId, Topic } from '@/types';
 import { pct } from './mastery';
 
@@ -18,7 +18,7 @@ export const COUNTABLE: StudySession['status'][] = ['planned', 'in_progress', 'c
  */
 export function sessionProgress(s: StudySession): number {
   if (s.status === 'completed') return 1;
-  const acts = activitiesFor(s.templateId, s.mode ?? s.plannedMode);
+  const acts = sessionActivities(s, s.mode ?? s.plannedMode);
   const total = acts.reduce((t, a) => t + a.minutes, 0);
   if (!total) return 0;
   const done = acts.filter((a) => s.completedActivities.includes(a.key)).reduce((t, a) => t + a.minutes, 0);

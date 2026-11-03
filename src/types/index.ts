@@ -95,11 +95,11 @@ export interface SessionTemplate {
   subjectId: SubjectId | '*';
   name: string;
   /** learn = new/consolidation, practice = applied, exam = timed/exam-focused. */
-  purpose: 'learn' | 'practice' | 'exam' | 'repair' | 'retest' | 'quick';
+  purpose: 'learn' | 'practice' | 'exam' | 'repair' | 'retest' | 'quick' | 'mock';
   modes: Record<PaceMode, ActivitySpec[]>;
 }
 
-export type SessionSource = 'plan' | 'manual' | 'repair' | 'retest' | 'review' | 'followup' | 'quickcheck';
+export type SessionSource = 'plan' | 'manual' | 'repair' | 'retest' | 'review' | 'followup' | 'quickcheck' | 'homemock' | 'homemock-mark';
 
 /**
  * Stored lifecycle state. Display states like "Ready" / "Upcoming" are derived from date.
@@ -120,6 +120,13 @@ export interface SessionMove {
   at: ISOInstant;
   reason: string;
   auto: boolean;
+}
+
+export interface MockPaper {
+  paperId: string | null; // subject paper id, e.g. 'p1'
+  label: string; // e.g. "Paper 1 — Non-calculator"
+  reference: string; // e.g. "4037/12 M/J 2026"
+  minutes: number; // official paper length
 }
 
 export interface StudySession {
@@ -157,6 +164,10 @@ export interface StudySession {
   repairId?: string;
   /** Light completion of an essential objective → follow-up session id. */
   followupId?: string;
+  /** Home mock: the past paper being sat under exam conditions. */
+  mockPaper?: MockPaper;
+  /** Per-activity minute overrides (e.g. a 2-hour paper in a home mock). */
+  activityMinutes?: Record<string, number>;
   planVersion: number;
   createdAt: ISOInstant;
   updatedAt: ISOInstant;

@@ -1,5 +1,5 @@
 import { db } from '@/db/db';
-import { activitiesFor } from '@/data/catalog';
+import { sessionActivities } from '@/data/catalog';
 import { makeFollowup, needsFollowup, proposePlacement, applyPlacement } from '@/scheduling/carryover';
 import { pickRetestDate } from '@/domain/repair';
 import { makeSession } from '@/scheduling/engine';
@@ -15,7 +15,7 @@ export async function startSession(id: string, mode: PaceMode) {
     const s = await db.sessions.get(id);
     if (!s) throw new Error('Session not found');
     if (s.status === 'completed') return s;
-    const keys = new Set(activitiesFor(s.templateId, mode).map((a) => a.key));
+    const keys = new Set(sessionActivities(s, mode).map((a) => a.key));
     const next: StudySession = {
       ...s,
       mode,
@@ -68,7 +68,7 @@ export async function completeSession(id: string, today: ISODate): Promise<Compl
     if (!s) throw new Error('Session not found');
     if (s.status === 'completed') return { session: s };
     const mode = s.mode ?? s.plannedMode;
-    const acts = activitiesFor(s.templateId, mode);
+    const acts = sessionActivities(s, mode);
     const doneMinutes = acts.filter((a) => s.completedActivities.includes(a.key)).reduce((t, a) => t + a.minutes, 0);
     const done: StudySession = {
       ...s,

@@ -58,6 +58,17 @@ export function AssessScreen() {
       }
       if (s.repairId && s.source === 'retest') setRepairId(s.repairId);
       if (s.purpose === 'exam') setType('timed-paper');
+      const fromMock = async () => {
+        const mock = s.source === 'homemock' ? s : s.source === 'homemock-mark' && s.parentSessionId ? await db.sessions.get(s.parentSessionId) : undefined;
+        if (!mock?.mockPaper) return;
+        setType('timed-paper');
+        setSource('official-past-paper');
+        setRef(`${mock.mockPaper.reference ? mock.mockPaper.reference + ' · ' : ''}${mock.mockPaper.label.replace(/\s*\(.*\)\s*$/, '')}`);
+        if (mock.mockPaper.paperId) setPaper(mock.mockPaper.paperId);
+        setTopic('');
+        setDate(mock.date <= today ? mock.date : today);
+      };
+      fromMock();
     });
   }, [sessionId]);
 

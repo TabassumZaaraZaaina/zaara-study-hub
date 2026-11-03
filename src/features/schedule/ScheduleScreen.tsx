@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, RefreshCw, CalendarOff, GraduationCap } from 'lucide-react';
 import { SUBJECT_STYLE } from '@/data/catalog';
 import { dayCapacity, loadOn } from '@/scheduling/engine';
@@ -58,6 +59,7 @@ export function ScheduleScreen() {
             {days.map((d) => {
               const list = visible(d);
               const movedOut = sessions.filter((s) => s.moves.some((m) => m.from === d) && s.date !== d);
+              const replacedByMock = sessions.filter((s) => s.date === d && s.status === 'consolidated' && s.note?.startsWith('Replaced by a home mock'));
               const dayExams = exams.filter((e) => e.date === d);
               const cap = dayCapacity(config, d, exams);
               const load = loadOn(sessions, d);
@@ -90,6 +92,9 @@ export function ScheduleScreen() {
                   {open && (
                     <div className="border-t border-line px-2 py-2">
                       {list.map((s) => <SessionRow key={s.id} s={s} subject={subjects[s.subjectId]} topics={topics} today={today} onClick={() => setEditing(s)} />)}
+                      {replacedByMock.map((s) => (
+                        <p key={s.id} className="px-3 py-1.5 text-[13px] text-muted">↪ {subjects[s.subjectId]?.shortName} session replaced by the home mock</p>
+                      ))}
                       {movedOut.map((s) => (
                         <p key={s.id} className="px-3 py-1.5 text-[13px] text-muted">↪ {subjects[s.subjectId]?.shortName} moved to {fmtDayMonth(s.date)}</p>
                       ))}
@@ -116,6 +121,7 @@ export function ScheduleScreen() {
         <Button variant="secondary" onClick={() => setSheet('add')}><Plus size={16} /> Add session or test</Button>
         <Button variant="secondary" onClick={() => setSheet('off')}><CalendarOff size={16} /> Unavailable days</Button>
         <Button variant="secondary" onClick={() => setSheet('regen')}><RefreshCw size={16} /> Refresh plan</Button>
+        <Link to="/exams?tab=home" className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 text-[15px] font-semibold sm:col-span-3"><GraduationCap size={16} /> Home mocks</Link>
       </div>
 
       <SessionEditor session={editing} onClose={() => setEditing(null)} today={today} />
