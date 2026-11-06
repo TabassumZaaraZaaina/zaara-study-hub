@@ -47,10 +47,11 @@ export function SetupScreen() {
             <div className="mt-3 flex flex-wrap gap-2">{SUBJECTS.map((s) => <span key={s.id} className="inline-flex items-center gap-2 rounded-full bg-sunken py-1 pl-1 pr-3 text-sm"><SubjectGlyph id={s.id} size={24} />{s.name}</span>)}</div>
             <ul className="mt-4 space-y-1.5 text-sm">
               <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Mock 2 starts 25 November 2026 — {diffDays(today, '2026-11-25')} days away</li>
-              <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Final O Levels: May/June 2027 series</li>
+              <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> O Level finals: 16 papers, 26 April – 11 June 2027</li>
+              <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Official Cambridge syllabuses for all 7 subjects</li>
               <li className="flex gap-2"><Check size={16} className="mt-0.5 text-green" /> Days run on Bangladesh time</li>
             </ul>
-            <p className="mt-3 text-[13px] text-muted">Paper dates, syllabus codes and topic lists can be added any time — nothing is guessed.</p>
+            <p className="mt-3 text-[13px] text-muted">Taken from the official Cambridge syllabuses and June 2027 timetable. Mock 2 paper dates can be added when the school releases them — nothing is guessed.</p>
           </Card>
           <Button size="lg" className="mt-6 w-full" onClick={() => setStep(1)}>Continue</Button>
         </div>
