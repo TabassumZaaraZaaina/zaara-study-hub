@@ -144,11 +144,14 @@ export function applyPlacement(s: StudySession, p: Placement, all: StudySession[
   for (let i = chain.length - 1; i >= 1; i--) {
     updates.push({ ...chain[i], topicIds: chain[i - 1].topicIds, updatedAt: now, note: chain[i - 1].topicIds.length ? 'Topic moved back one session after a missed session.' : chain[i].note });
   }
-  // Take on the slot's length (e.g. Full → Steady) so the day gets no extra minutes.
+  // If the slot is shorter (e.g. a Steady slot), take on its length so the day gets
+  // no extra minutes; if it's longer, keep the session's own length.
+  const slotMinutes = templateMinutes(s.templateId, head.plannedMode) || head.plannedMinutes;
+  const shrink = slotMinutes < s.plannedMinutes;
   updates.push({
     ...s,
-    plannedMode: head.plannedMode,
-    plannedMinutes: templateMinutes(s.templateId, head.plannedMode) || head.plannedMinutes,
+    plannedMode: shrink ? head.plannedMode : s.plannedMode,
+    plannedMinutes: shrink ? slotMinutes : s.plannedMinutes,
     date: head.date,
     order: head.order,
     status: s.completedActivities.length ? 'in_progress' : 'planned',

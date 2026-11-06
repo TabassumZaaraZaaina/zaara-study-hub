@@ -73,6 +73,17 @@ describe('plan generation', () => {
     expect(nextExamFor('physics', '2026-12-12', []).label).toMatch(/Finals/);
   });
 
+  it('keeps Mock 2 as the target when only the finals are entered', async () => {
+    const { finalsExams } = await import('@/data/finals2027');
+    const finals = finalsExams();
+    const t = nextExamFor('physics', '2026-11-06', finals);
+    expect(t).toMatchObject({ date: '2026-11-25', approximate: true });
+    expect(nextExamFor('physics', '2026-11-30', finals).inPeriodUnknown).toBe(true);
+    // after the mock window the finals take over
+    expect(nextExamFor('physics', '2027-01-10', finals)).toMatchObject({ date: '2027-05-03', approximate: false });
+    expect(nextExamFor('economics', '2027-05-27', finals).date).toBe('2027-06-11');
+  });
+
   it('gives more weight to subjects with weak topics', () => {
     const ts = topics('chemistry', 4);
     const mastery = Object.fromEntries(ts.map((t) => [t.id, 'red' as const]));

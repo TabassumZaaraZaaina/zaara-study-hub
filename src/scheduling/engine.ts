@@ -104,13 +104,18 @@ export function nextExamFor(subjectId: SubjectId, date: ISODate, exams: Exam[]):
   const mockAllDone = subjectMock.length > 0 && subjectMock.every((e) => e.date && e.date < date);
   const mockUnknown = subjectMock.length === 0 || subjectMock.some((e) => !e.date);
 
+  // The Mock 2 period (date not yet entered for this subject) comes first when it
+  // is sooner than any entered paper — e.g. when only the finals are entered.
+  if (!mockAllDone && mockUnknown && mock.startDate) {
+    const firstDated = dated[0]?.date;
+    if (date < mock.startDate && (!firstDated || firstDated >= mock.startDate))
+      return { date: mock.startDate, approximate: true, label: 'Mock 2 period', inPeriodUnknown: false };
+    if (date >= mock.startDate && diffDays(mock.startDate, date) < PRIORITY.assumedMockWindowDays && (!firstDated || diffDays(date, firstDated) > PRIORITY.assumedMockWindowDays))
+      return { date: null, approximate: true, label: 'Mock 2 (date not entered)', inPeriodUnknown: true };
+  }
   if (dated.length) {
     const e = dated[0];
     return { date: e.date, approximate: false, label: `${e.group === 'mock2' ? 'Mock 2' : 'Final'} ${e.paper}`.trim(), inPeriodUnknown: false };
-  }
-  if (!mockAllDone && mockUnknown && mock.startDate) {
-    if (date < mock.startDate) return { date: mock.startDate, approximate: true, label: 'Mock 2 period', inPeriodUnknown: false };
-    if (diffDays(mock.startDate, date) < PRIORITY.assumedMockWindowDays) return { date: null, approximate: true, label: 'Mock 2 (date not entered)', inPeriodUnknown: true };
   }
   return { date: null, approximate: true, label: 'Finals (dates not entered)', inPeriodUnknown: false };
 }

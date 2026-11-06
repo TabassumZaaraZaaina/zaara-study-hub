@@ -37,7 +37,12 @@ describe('v2 migration: Mock 2 on 25 Nov, English added', () => {
     expect(notices.some((n) => /25 November/.test(n.text))).toBe(true);
     expect(nextExamFor('physics', '2026-11-04', []).date).toBe('2026-11-25');
 
-    // idempotent
+    // v3: the 16 official June 2027 final papers
+    const finals = await db.exams.where('group').equals('final').toArray();
+    expect(finals).toHaveLength(16);
+    expect(finals.find((e) => e.subjectId === 'economics' && e.date === '2027-05-26')?.durationMinutes).toBe(120);
+    expect(await getMeta<number>('dataVersion')).toBe(3);
+        // idempotent
     const count = await db.sessions.count();
     await runMigrations('2026-11-04');
     expect(await db.sessions.count()).toBe(count);

@@ -37,6 +37,9 @@ export function ExamsScreen() {
   const list = exams.filter((e) => e.group === group).sort((a, b) => ((a.date ?? '9999') + (a.startTime ?? '') < (b.date ?? '9999') + (b.startTime ?? '') ? -1 : 1));
   const mock = MILESTONES[0];
   const daysToMock = diffDays(today, mock.startDate!);
+  const finalDates = exams.filter((e) => e.group === 'final' && e.date).map((e) => e.date!).sort();
+  const firstFinal = finalDates[0];
+  const lastFinal = finalDates.at(-1);
 
   return (
     <div className="animate-rise">
@@ -49,8 +52,17 @@ export function ExamsScreen() {
         </Card>
         <Card className="p-4">
           <p className="text-[13px] text-muted">O Level Finals</p>
-          <p className="text-2xl font-semibold">May/June 2027</p>
-          <p className="text-[12px] text-muted">{exams.some((e) => e.group === 'final' && e.date) ? 'dates entered' : 'dates not entered yet'}</p>
+          {firstFinal ? (
+            <>
+              <p className="text-2xl font-semibold">{diffDays(today, firstFinal) > 0 ? `${diffDays(today, firstFinal)} days` : 'Under way'}</p>
+              <p className="text-[12px] text-muted">starts {fmtShort(firstFinal)}{lastFinal && lastFinal !== firstFinal ? ` · ends ${fmtShort(lastFinal)}` : ''}</p>
+            </>
+          ) : (
+            <>
+              <p className="text-2xl font-semibold">May/June 2027</p>
+              <p className="text-[12px] text-muted">dates not entered yet</p>
+            </>
+          )}
         </Card>
       </div>
 

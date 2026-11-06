@@ -55,7 +55,7 @@ export const SUBJECT_STYLE: Record<SubjectId, { accent: string; soft: string; in
 
 export const MILESTONES: Milestone[] = [
   { id: 'mock2', label: 'Mock 2', startDate: '2026-11-25', note: 'Start date confirmed (25 November 2026). Individual paper dates to be entered.' },
-  { id: 'final', label: 'O Level Finals', startDate: null, note: 'May/June 2027 series. Exact dates to be entered from the Statement of Entry.' }
+  { id: 'final', label: 'O Level Finals', startDate: '2027-04-26', note: 'June 2027 series, zone 4: 26 April – 11 June 2027 (official Cambridge timetable).' }
 ];
 
 const a = (key: string, title: string, minutes: number, kind: ActivitySpec['kind'], instruction: string, assessable = false): ActivitySpec =>

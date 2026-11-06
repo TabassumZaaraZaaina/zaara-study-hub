@@ -4,6 +4,7 @@ import { localDate } from '@/utils/dates';
 import { getConfig, getMeta, log, setMeta } from './meta';
 import { ensureHorizon, initialiseDatabase } from './plan';
 import { loadAllSyllabuses } from './topics';
+import { ensureFinals2027 } from './migrations';
 
 export interface SetupInput {
   displayName?: string;
@@ -23,7 +24,8 @@ export async function completeSetup(input: SetupInput, today: ISODate = localDat
   if (input.exams?.length) await db.exams.bulkPut(input.exams);
   if (input.loadSyllabuses !== false) await loadAllSyllabuses();
   await setMeta('generatedThrough', undefined);
-  await setMeta('dataVersion', 2);
+  await setMeta('dataVersion', 3);
+  await ensureFinals2027();
   const created = await ensureHorizon(today);
   await log('setup.complete', 'profile', 'me', `Plan generated: ${created} sessions`);
   return created;

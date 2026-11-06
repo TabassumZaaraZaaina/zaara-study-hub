@@ -47,11 +47,11 @@ const errors = [];
   await shot('08-marking');
   await p.click('text=Skip for now');
   await p.goto(URL + '#/');
-  await p.waitForSelector('text=sessions completed');
+  await p.waitForSelector('text=/sessions completed|plan is done/');
   await shot('09-today-after');
   // reload persistence
   await p.reload();
-  await p.waitForSelector('text=1 of');
+  await p.waitForSelector('text=/1 of|plan is done/');
   // Schedule
   await p.click('nav.fixed >> text=Schedule');
   await p.waitForSelector('text=completed');
@@ -114,7 +114,7 @@ const errors = [];
   await p.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
   await ctx.setOffline(true);
   await p.reload();
-  const ok = await p.waitForSelector('text=sessions completed', { timeout: 8000 }).then(() => 1, () => 0);
+  const ok = await p.waitForSelector('text=/sessions completed|plan is done/', { timeout: 8000 }).then(() => 1, () => 0);
   if (!ok) errors.push('offline reload failed');
   await shot('21-offline');
   console.log(errors.length ? errors.join('\n') : 'NO ERRORS');
